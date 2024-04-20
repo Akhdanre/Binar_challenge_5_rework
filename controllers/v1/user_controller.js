@@ -31,7 +31,7 @@ module.exports = {
                     return webResponse(res, {
                         code: 400,
                         isSucces: false,
-                        message: `user with id ${id} not found`
+                        message: `user not found`
                     })
                 }
                 return webResponse(res, { data: user })
@@ -54,12 +54,12 @@ module.exports = {
             }
 
             let encryptedPass = await bcrypt.hash(password, 10)
-            
+
 
             let user = await prisma.user.create({
                 data: {
                     email,
-                    password : encryptedPass,
+                    password: encryptedPass,
                     name,
                     profile: {
                         create: {
@@ -89,14 +89,19 @@ module.exports = {
             }
             return webResponse(res, { data: user })
         } catch (err) {
-            // if (err.code == 'P2002') {
-            //     return webResponse(res, {
-            //         code: 400,
-            //         message: "email is already in use",
-            //         isSuccess: false
-            //     });
-            // }
+            console.log(err)
             next(err)
+        }
+    },
+    deleteUsers: async () => {
+        try {
+            await prisma.transaction.deleteMany()
+            await prisma.bankAccount.deleteMany()
+            await prisma.profile.deleteMany()
+            await prisma.user.deleteMany()
+        } catch (err) {
+            console.log(err)
+            throw "error in delete"
         }
     }
 }

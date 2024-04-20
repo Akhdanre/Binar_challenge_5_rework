@@ -1,0 +1,584 @@
+openapi: "3.0.2"
+info:
+  title: Challenge 5
+  version: "1.0"
+servers:
+  - url: http://localhost:3000/api/v1
+paths:
+  /auth/register:
+    post:
+      tags:
+        - "Auth"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - password
+                - address
+                - identify_type
+                - identify_number
+              properties:
+                name:
+                  type: string
+                  format: akhdan
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+                  example: rahasia123
+                address:
+                  type: string
+                  example: jl ...
+                identify_type:
+                  type: string
+                  example: bank
+                identify_number:
+                  type: integer
+                  example: 23
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Success"
+                  data:
+                    type: object
+                    properties:
+                      email:
+                        type: string
+                        format: email
+                        example: "akhdan@example.com"
+                      name:
+                        type: string
+                        example: "akhdan"
+                      profile:
+                        type: object
+                        properties:
+                          identify_number:
+                            type: integer
+                            example: 23
+                          identify_type:
+                            type: string
+                            example: "bank"
+                          address:
+                            type: string
+                            example: "Jl ..."
+
+        "400":
+          description: BAD REQUEST
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "email already used"
+                  data:
+                    example: null
+  /auth/login:
+    post:
+      tags:
+        - "Auth"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+                  example: rahasia123
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Success"
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 4
+                      name:
+                        type: string
+                        example: "akhdan"
+                      email:
+                        type: string
+                        format: email
+                        example: "akhdan@example.com"
+                      token:
+                        type: string
+                        example: "eyJhbGciOiJIUzI1...."
+        "400":
+          description: BAD REQUEST
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "check again username and password"
+                  data:
+                    example: null
+  
+  /users:
+    get:
+      tags:
+        - "Users"
+      security:
+        - TokenAuth: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Success"
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserResponse'
+                
+  /users/{userId}:
+    get:
+      tags:
+        - "Users"
+      security:
+        - TokenAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Success"
+                  data:
+                    type: object
+                    $ref: '#/components/schemas/UserResponse'
+        "400":
+          description: BAD REQUEST
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserNotFound'
+  /accounts:
+    get:
+      tags:
+        - "account"
+      security:
+        - TokenAuth: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Success"
+                  data:
+                    type: object
+                    $ref: '#/components/schemas/BankAccountResponse'
+    post:
+      tags:
+        - "account"
+      security:
+        - TokenAuth: []
+      requestBody: 
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user_id
+                - bank_name
+                - bank_account_number
+              properties:
+                user_id:
+                  type: integer
+                  example: 1
+                bank_name:
+                  type: string
+                  example: mandiri
+                bank_account_number:
+                  type: integer
+                  example: 909234
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Success"
+                  data:
+                    type: object
+                    $ref : '#/components/schemas/BankAccountResponse'
+        "400":
+          description: BAD REQUEST 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserNotFound'
+
+  /accounts/{accountId}:
+    get:
+      tags:
+        - "account"
+      security:
+        - TokenAuth: []
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Success"
+                  data:
+                    type: object
+                    $ref : '#/components/schemas/BankAccountResponse'
+        "400":
+          description: BAD REQUEST 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserNotRegistered'
+  /accounts/balance:
+    patch:
+      tags:
+        - "account"
+      security:
+        - TokenAuth: []
+      requestBody: 
+        required: true
+        content:
+          application/json:
+              schema:
+                type: object
+                required:
+                  - user_id
+                  - balance_transaction
+                properties:
+                  user_id:
+                    type: integer
+                    example: 1
+                  balance_transaction:
+                    type: integer
+                    example: 300000
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Success"
+                  data:
+                    type: object
+                    $ref : '#/components/schemas/BankAccountResponse'
+      
+        "400":
+          description: BAD REQUEST
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/UserNotRegistered'
+  /transaction:
+    get:
+      tags:
+        - "transaction"
+      security:
+        - TokenAuth: []
+      
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Success"
+                  data:
+                    type: object
+                    $ref: "#/components/schemas/TransactionResponse"
+                    
+    post:
+      tags:
+        - "transaction"
+      security:
+        - TokenAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                source_account_id:
+                  type: integer
+                  example: 1
+                destination_account_id:
+                  type: integer
+                  example: 2
+                amount:
+                  type: integer
+                  example: 100000
+              required:
+                - source_account_id
+                - destination_account_id
+                - amount
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Success"
+                  data:
+                    type: object
+                    $ref: "#/components/schemas/TransactionResponse"
+        "400":
+          description: BAD REQUEST
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Success"
+                  data:
+                    type: array
+                    $ref : '#/components/schemas/UserNotRegistered'
+
+
+  /transaction/{id}:
+    get:
+      tags:
+        - "transaction"
+      security:
+        - TokenAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Success"
+                  data:
+                    type: object
+                    $ref: "#/components/schemas/TransactionResponse"
+        "400":
+          description: BAD REQUEST
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "BAD REQUEST"
+                  data:
+                    example : null
+
+
+components:
+  securitySchemes:
+    TokenAuth:
+      description: authentication to access endpoint
+      type: apiKey
+      in: header
+      name: authorization
+
+  schemas: 
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 3
+        name:
+          type: string
+          example: akhdan
+        email:
+          type: string
+          example: akhdanR@gmail.com
+        password:
+          type: string
+          example: "$2b$10$O0gh7HIl...."
+
+    BankAccountResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 3
+        bank_name:
+          type: string
+          example: mandiri
+        bank_account_number:
+          type: integer
+          example: 909234
+        balance:
+          type: integer
+          example: 1000000
+        user_id:
+          type: integer
+          example: 3
+    TransactionResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 2
+        amount:
+          type: integer
+          example: 100000
+        source_account_id:
+          type: integer
+          example: 3
+        destination_account_id:
+          type: integer
+          example: 4
+    UserNotFound: 
+      type: object
+      properties:
+        status:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "user not found"
+        data:
+          example : null
+    UserNotRegistered: 
+      type: object
+      properties:
+        status:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "user not registered"
+        data:
+          example : null

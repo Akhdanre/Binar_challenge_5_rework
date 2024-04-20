@@ -17,6 +17,7 @@ module.exports = {
     show: async (req, res, next) => {
         let id = req.params.id
         try {
+            id = Number(id)
             let transaction = await prisma.transaction.findUnique({ where: { id } })
             if (!transaction) {
                 return webResponse(res, {
@@ -37,8 +38,6 @@ module.exports = {
         let { source_account_id, destination_account_id, amount } = req.body
 
         try {
-
-
             let sourceData = await prisma.bankAccount.findUnique({
                 where: {
                     id: source_account_id
@@ -123,6 +122,7 @@ module.exports = {
                 data: transaction
             })
         } catch (err) {
+            console.log(err)
             next(err)
         }
 

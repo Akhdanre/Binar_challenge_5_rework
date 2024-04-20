@@ -35,6 +35,28 @@ module.exports = {
     create: async (req, res, next) => {
         let { user_id, bank_name, bank_account_number } = req.body
         try {
+            const user = await prisma.user.findUnique({
+                where: {
+                    id: user_id
+                }
+            })
+    
+            if (!user) {
+                return webResponse(res, {
+                    code: 400,
+                    isSucces : false,
+                    message: "User not found"
+                });
+            }
+    
+            if (!bank_name || !bank_account_number) {
+                return webResponse(res, {
+                    code: 400,
+                    isSuccess: false,
+                    message: "bank name and bank account number are required"
+                });
+            }
+    
             let bankAccount = await prisma.bankAccount.create({
                 data: {
                     user_id,
@@ -42,28 +64,17 @@ module.exports = {
                     bank_account_number,
                     balance: 0
                 }
-            })
-            if (!bankAccount) {
-                return webResponse(res, {
-                    code: 400,
-                    message: "bad request",
-                    isSucces: false
-                })
-            }
+            });
+    
             return webResponse(res, {
                 data: bankAccount
-            })
+            });
         } catch (err) {
-            if (err.code == 'P2003') {
-                return webResponse(res, {
-                    code: 400,
-                    message: "User not found",
-                    isSuccess: false
-                });
-            }
+            console.log(err)
             next(err)
         }
     },
+    
     upBalance: async (req, res, next) => {
         let { user_id, balance_transaction } = req.body
         try {
